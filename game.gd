@@ -353,7 +353,7 @@ func _on_stain_timer_timeout() -> void:
 		create_stain(Vector2(x, y))
 
 func handle_bomb_cut() -> void:
-	bomb_message.text = "Упс, вы разрезали бомбу!"
+	bomb_message.text = "💣 Упс, вы разрезали бомбу! 💣"
 	bomb_message.visible = true
 	
 	if game_manager and game_manager.sound_enabled and bomb_player and bomb_player.stream:
@@ -369,6 +369,10 @@ func _on_lives_changed(new_lives: int) -> void:
 
 func _on_score_changed(new_score: int) -> void:
 	score_label.text = "Очки: " + str(new_score)
+	
+	var tween = create_tween()
+	tween.tween_property(score_label, "scale", Vector2(1.2, 1.2), 0.1)
+	tween.tween_property(score_label, "scale", Vector2(1.0, 1.0), 0.2)
 
 func _on_game_over() -> void:
 	is_game_active = false
