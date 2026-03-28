@@ -1,9 +1,7 @@
 extends Control
 
 ## Основная игровая сцена
-
 @onready var game_area: Control = $GameArea
-@onready var lives_label: Label = $UI/LivesLabel
 @onready var score_label: Label = $UI/ScoreLabel
 @onready var countdown_label: Label = $UI/CountdownLabel
 @onready var bomb_message: Label = $UI/BombMessage
@@ -28,6 +26,10 @@ var fruits: Array[RigidBody2D] = []
 var stains: Array[Node] = []
 var is_dragging: bool = false
 
+# Переменные для сердец
+var hearts: Array = []
+var hearts_container: HBoxContainer
+
 var fruit_scene = preload("res://fruit.tscn")
 var fruit_half_scene = preload("res://fruit_half.tscn")
 var stain_scene = preload("res://stain.tscn")
@@ -40,6 +42,13 @@ func _ready() -> void:
 	game_manager.score_changed.connect(_on_score_changed)
 	game_manager.game_over.connect(_on_game_over)
 	
+	# Создаем систему сердец
+	_create_hearts_system()
+	
+	# Удаляем текстовый лейбл жизней, если он существует
+	if has_node("UI/LivesLabel"):
+		$UI/LivesLabel.queue_free()
+	
 	_update_music_from_settings()
 	
 	start_countdown()
@@ -47,11 +56,84 @@ func _ready() -> void:
 	bomb_message.visible = false
 	game_over_panel.visible = false
 	continue_button.pressed.connect(_on_continue_pressed)
+
+# ==================== СИСТЕМА СЕРДЕЦ ====================
+func _create_hearts_system() -> void:
+	# Создаем контейнер для сердец в левом верхнем углу
+	hearts_container = HBoxContainer.new()
+	hearts_container.name = "HeartsContainer"
 	
+	var screen_size = get_viewport().size
+	hearts_container.position = Vector2(20, 20)
+	hearts_container.add_theme_constant_override("separation", 12)
+	$UI.add_child(hearts_container)
+	
+	# Подписываемся на изменение размера окна
+	get_viewport().size_changed.connect(_update_hearts_position)
+	
+	# Создаем 3 сердца
+	_update_hearts_display(3)
 
+func _update_hearts_position() -> void:
+	if hearts_container:
+		hearts_container.position = Vector2(20, 20)
 
+func _update_hearts_display(lives: int) -> void:
+	# Очищаем старые сердца
+	for heart in hearts:
+		if is_instance_valid(heart):
+			heart.queue_free()
+	hearts.clear()
+	
+	# Создаем новые сердца
+	for i in range(lives):
+		var heart = Label.new()
+		heart.text = "❤️"
+		heart.add_theme_font_size_override("font_size", 36)
+		heart.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
+		heart.add_theme_constant_override("outline_size", 2)
+		heart.add_theme_color_override("font_outline_modulate", Color(0, 0, 0))
+		hearts_container.add_child(heart)
+		hearts.append(heart)
+	
+	# Анимация при потере сердца
+	if lives < 3 and hearts.size() < 3:
+		_animate_heart_loss()
 
+func _animate_heart_loss() -> void:
+	var tween = create_tween()
+	tween.parallel().tween_property(hearts_container, "scale", Vector2(1.2, 1.2), 0.1)
+	tween.parallel().tween_property(hearts_container, "modulate", Color(1, 0.5, 0.5), 0.1)
+	tween.tween_property(hearts_container, "scale", Vector2(1.0, 1.0), 0.2)
+	tween.parallel().tween_property(hearts_container, "modulate", Color(1, 1, 1), 0.2)
+	
+	# Создаем летящие разбитые сердечки
+	for i in range(5):
+		var floating_heart = Label.new()
+		floating_heart.text = "💔"
+		floating_heart.add_theme_font_size_override("font_size", 28 + randi() % 16)
+		floating_heart.modulate = Color(1, 0.3, 0.3, 0.8)
+		floating_heart.position = hearts_container.global_position + Vector2(randf_range(-20, 150), randf_range(-20, 40))
+		add_child(floating_heart)
+		
+		var tween2 = create_tween()
+		tween2.parallel().tween_property(floating_heart, "position", floating_heart.position + Vector2(randf_range(-50, 100), -80), 0.8)
+		tween2.parallel().tween_property(floating_heart, "modulate:a", 0.0, 0.8)
+		await tween2.finished
+		floating_heart.queue_free()
+
+# ==================== НОВАЯ ФУНКЦИЯ - СКРЫТИЕ СЕРДЕЦ ====================
+func _hide_hearts() -> void:
+	if hearts_container:
+		hearts_container.visible = false
+
+func _show_hearts() -> void:
+	if hearts_container:
+		hearts_container.visible = true
+
+# ==================== ОСТАЛЬНЫЕ ФУНКЦИИ ====================
 func start_countdown() -> void:
+	_show_hearts()  # Показываем сердца при старте
 	countdown_label.visible = true
 	await get_tree().create_timer(1.0).timeout
 	countdown_label.text = "3"
@@ -70,15 +152,12 @@ func start_countdown() -> void:
 	countdown_label.visible = false
 	is_game_active = true
 	
-	# Курсор = нож
 	_set_knife_cursor()
 	
-	# Запускаем спавн фруктов
 	spawn_timer.wait_time = 0.75
 	spawn_timer.timeout.connect(_on_spawn_timer_timeout)
 	spawn_timer.start()
 	
-	# Запускаем таймер для создания новых пятен
 	stain_timer.wait_time = 0.5
 	stain_timer.timeout.connect(_on_stain_timer_timeout)
 	stain_timer.start()
@@ -87,11 +166,9 @@ func _on_spawn_timer_timeout() -> void:
 	if not is_game_active:
 		return
 
-	var count = randi() % 2 + 1  # Будет 1 или 2
+	var count = randi() % 2 + 1
 	for i in range(count):
 		spawn_fruit()
-	
-
 
 func spawn_fruit() -> void:
 	var fruit = fruit_scene.instantiate() as RigidBody2D
@@ -100,9 +177,9 @@ func spawn_fruit() -> void:
 	if randf() < 0.1:
 		fruit.is_bomb = true
 	else:
-		var fruit_types = [ "banana", "watermelon", "pineapple", "kiwi",
-		 "strawberry", "lemon", "grape", "garnet", "grapefruit","orange", 
-		"passionfruit", "peach", "pear"]
+		var fruit_types = ["banana", "watermelon", "pineapple", "kiwi",
+			"strawberry", "lemon", "grape", "garnet", "grapefruit", "orange", 
+			"passionfruit", "peach", "pear"]
 		fruit.fruit_type = fruit_types[randi() % fruit_types.size()]
 	
 	fruits.append(fruit)
@@ -138,7 +215,6 @@ func _set_knife_cursor() -> void:
 			elif d <= 5.0:
 				var a = (1.0 - (d - 3.0) / 2.0) * 0.5
 				img.set_pixel(x, y, Color(0.7, 0.85, 1.0, a))
-	# Кончик ножа — точка, по которой режем 
 	Input.set_custom_mouse_cursor(img, Input.CURSOR_ARROW, Vector2(size - 4, size - 4))
 
 func _point_to_segment_distance(p: Vector2, a: Vector2, b: Vector2) -> float:
@@ -149,7 +225,6 @@ func _point_to_segment_distance(p: Vector2, a: Vector2, b: Vector2) -> float:
 	return p.distance_to(proj)
 
 func _input(event: InputEvent) -> void:
-	# Когда показан экран очков — только обрабатываем нажатие по области «Продолжить» (резерв, если кнопка не получит событие).
 	if game_over_panel.visible:
 		var released := false
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
@@ -191,7 +266,6 @@ func _input(event: InputEvent) -> void:
 		queue_redraw()
 		check_cuts_continuous()
 	
-	# Сенсор 
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			touch_path.clear()
@@ -232,7 +306,6 @@ func _draw() -> void:
 func check_cuts() -> void:
 	if touch_path.size() < 2:
 		return
-	
 	check_cuts_continuous()
 
 func check_cuts_continuous() -> void:
@@ -251,7 +324,6 @@ func check_cuts_continuous() -> void:
 			
 			var fruit_pos = fruit.global_position
 			var distance = point_to_line_distance(fruit_pos, start, end)
-			# Радиус попадания ножа по фрукту 
 			var hit_radius = 55.0
 			if distance < hit_radius:
 				cut_fruits.append(fruit)
@@ -281,36 +353,27 @@ func cut_fruit(fruit: RigidBody2D, cut_position: Vector2) -> void:
 	if game_manager and game_manager.sound_enabled and slice_player and slice_player.stream:
 		slice_player.play()
 	
-	# Создаем две половинки
 	create_fruit_halves(fruit, cut_position)
-	
-	# Создаем пятно
 	create_stain(cut_position)
-	
-	# Добавляем очки
 	game_manager.add_score(10)
 	
-	# Удаляем фрукт
 	fruit.queue_free()
 	fruits.erase(fruit)
 
 func create_fruit_halves(fruit: RigidBody2D, position: Vector2) -> void:
 	var spread = 55.0
-	# Левая половина — уходит влево и вниз
 	var half1 = fruit_half_scene.instantiate()
 	half1.global_position = position + Vector2(-spread, 0)
 	half1.fruit_type = fruit.fruit_type
 	half1.is_left_half = true
 	game_area.add_child(half1)
 	
-	# Правая половина — уходит вправо и вниз
 	var half2 = fruit_half_scene.instantiate()
 	half2.global_position = position + Vector2(spread, 0)
 	half2.fruit_type = fruit.fruit_type
 	half2.is_left_half = false
 	game_area.add_child(half2)
 	
-	# Брызги
 	create_splatter(position, fruit.fruit_type)
 
 func create_stain(position: Vector2) -> void:
@@ -326,7 +389,7 @@ func create_splatter(position: Vector2, fruit_type: String) -> void:
 		var distance = randf_range(20, 60)
 		splatter.global_position = position + Vector2(cos(angle), sin(angle)) * distance
 		
-		var color = Color(1.0, 0.2, 0.2, 0.6)  # Красный по умолчанию
+		var color = Color(1.0, 0.2, 0.2, 0.6)
 		match fruit_type:
 			"banana", "lemon", "pineapple":
 				color = Color(1.0, 0.9, 0.2, 0.6)
@@ -334,13 +397,13 @@ func create_splatter(position: Vector2, fruit_type: String) -> void:
 				color = Color(1.0, 0.043, 0.302, 0.6) 
 			"orange", "peach":
 				color = Color(1.0, 0.506, 0.047, 0.6) 
-			"grape", "passion":
+			"grape", "passionfruit":
 				color = Color(0.6, 0.2, 0.8, 0.867)
 			"kiwi", "apple", "pear":
 				color = Color(0.486, 0.953, 0.153, 0.816)
 			"cherry", "strawberry":
 				color = Color(1.0, 0.1, 0.1, 0.6)
-			"grapefruit", "peach":
+			"grapefruit":
 				color = Color(0.839, 0.447, 0.047, 0.82)	
 		
 		splatter.modulate = color
@@ -359,13 +422,23 @@ func handle_bomb_cut() -> void:
 	if game_manager and game_manager.sound_enabled and bomb_player and bomb_player.stream:
 		bomb_player.play()
 	
+	_screen_shake()
+	
 	await get_tree().create_timer(2.0).timeout
 	bomb_message.visible = false
 	
 	game_manager.lose_life()
 
+func _screen_shake() -> void:
+	var original_pos = game_area.position
+	var tween = create_tween()
+	for i in range(5):
+		var offset = Vector2(randf_range(-8, 8), randf_range(-8, 8))
+		tween.tween_property(game_area, "position", offset, 0.05)
+	tween.tween_property(game_area, "position", original_pos, 0.05)
+
 func _on_lives_changed(new_lives: int) -> void:
-	lives_label.text = "Жизни: " + str(new_lives)
+	_update_hearts_display(new_lives)
 
 func _on_score_changed(new_score: int) -> void:
 	score_label.text = "Очки: " + str(new_score)
@@ -383,11 +456,14 @@ func _on_game_over() -> void:
 	is_dragging = false
 	queue_redraw()
 
-	_update_music_from_settings()  # остановит музыку
+	_update_music_from_settings()
 	if game_manager and game_manager.sound_enabled and lose_player and lose_player.stream:
 		lose_player.play()
 
 	Input.set_custom_mouse_cursor(null)
+	
+	# СКРЫВАЕМ СЕРДЦА ПРИ ПОКАЗЕ ЭКРАНА ОЧКОВ
+	_hide_hearts()
 	
 	show_game_over_banner()
 
