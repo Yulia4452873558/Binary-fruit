@@ -89,7 +89,7 @@ func _update_hearts_display(lives: int) -> void:
 	for i in range(lives):
 		var heart = Label.new()
 		heart.text = "❤️"
-		heart.add_theme_font_size_override("font_size", 36)
+		heart.add_theme_font_size_override("font_size", 100)
 		heart.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
 		heart.add_theme_constant_override("outline_size", 2)
 		heart.add_theme_color_override("font_outline_modulate", Color(0, 0, 0))
