@@ -1,6 +1,5 @@
 extends Control
 
-## Основная игровая сцена
 @onready var game_area: Control = $GameArea
 @onready var score_label: Label = $UI/ScoreLabel
 @onready var countdown_label: Label = $UI/CountdownLabel
@@ -16,7 +15,6 @@ extends Control
 @onready var bomb_player: AudioStreamPlayer = $BombPlayer
 @onready var lose_player: AudioStreamPlayer = $LosePlayer
 
-# Для отрисовки линии разреза
 var cut_line_points: Array[Vector2] = []
 
 var game_manager: Node
@@ -26,7 +24,6 @@ var fruits: Array[RigidBody2D] = []
 var stains: Array[Node] = []
 var is_dragging: bool = false
 
-# Переменные для сердец
 var hearts: Array = []
 var hearts_container: HBoxContainer
 
@@ -34,6 +31,8 @@ var fruit_scene = preload("res://fruit.tscn")
 var fruit_half_scene = preload("res://fruit_half.tscn")
 var stain_scene = preload("res://stain.tscn")
 var main_menu_scene = preload("res://main_menu.tscn")
+var _previous_score: int = 0
+
 
 func _ready() -> void:
 	game_manager = get_node("/root/GameManager")
@@ -42,10 +41,23 @@ func _ready() -> void:
 	game_manager.score_changed.connect(_on_score_changed)
 	game_manager.game_over.connect(_on_game_over)
 	
-	# Создаем систему сердец
+	# Устанавливаем начальное значение счета в красивом формате
+	var initial_score = game_manager.score
+	var formatted_initial = _format_score(initial_score)
+	score_label.text = "⭐ " + formatted_initial
+	_previous_score = initial_score
+	
+	# НАСТРОЙКА СТИЛЯ ОЧКОВ - УВЕЛИЧЕННЫЙ РАЗМЕР
+	score_label.add_theme_font_size_override("font_size", 56)  # Было 42, стало 56
+	score_label.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
+	score_label.add_theme_constant_override("shadow_offset_x", 3)
+	score_label.add_theme_constant_override("shadow_offset_y", 3)
+	score_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5))
+	score_label.add_theme_constant_override("outline_size", 2)
+	score_label.add_theme_color_override("font_outline_modulate", Color(0.5, 0.3, 0))
+	
 	_create_hearts_system()
 	
-	# Удаляем текстовый лейбл жизней, если он существует
 	if has_node("UI/LivesLabel"):
 		$UI/LivesLabel.queue_free()
 	
@@ -57,9 +69,7 @@ func _ready() -> void:
 	game_over_panel.visible = false
 	continue_button.pressed.connect(_on_continue_pressed)
 
-# ==================== СИСТЕМА СЕРДЕЦ ====================
 func _create_hearts_system() -> void:
-	# Создаем контейнер для сердец в левом верхнем углу
 	hearts_container = HBoxContainer.new()
 	hearts_container.name = "HeartsContainer"
 	
@@ -68,10 +78,8 @@ func _create_hearts_system() -> void:
 	hearts_container.add_theme_constant_override("separation", 12)
 	$UI.add_child(hearts_container)
 	
-	# Подписываемся на изменение размера окна
 	get_viewport().size_changed.connect(_update_hearts_position)
 	
-	# Создаем 3 сердца
 	_update_hearts_display(3)
 
 func _update_hearts_position() -> void:
@@ -79,24 +87,22 @@ func _update_hearts_position() -> void:
 		hearts_container.position = Vector2(20, 20)
 
 func _update_hearts_display(lives: int) -> void:
-	# Очищаем старые сердца
 	for heart in hearts:
 		if is_instance_valid(heart):
 			heart.queue_free()
 	hearts.clear()
 	
-	# Создаем новые сердца
+
 	for i in range(lives):
 		var heart = Label.new()
 		heart.text = "❤️"
-		heart.add_theme_font_size_override("font_size", 100)
+		heart.add_theme_font_size_override("font_size", 90)
 		heart.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
 		heart.add_theme_constant_override("outline_size", 2)
 		heart.add_theme_color_override("font_outline_modulate", Color(0, 0, 0))
 		hearts_container.add_child(heart)
 		hearts.append(heart)
 	
-	# Анимация при потере сердца
 	if lives < 3 and hearts.size() < 3:
 		_animate_heart_loss()
 
@@ -106,8 +112,7 @@ func _animate_heart_loss() -> void:
 	tween.parallel().tween_property(hearts_container, "modulate", Color(1, 0.5, 0.5), 0.1)
 	tween.tween_property(hearts_container, "scale", Vector2(1.0, 1.0), 0.2)
 	tween.parallel().tween_property(hearts_container, "modulate", Color(1, 1, 1), 0.2)
-	
-	# Создаем летящие разбитые сердечки
+
 	for i in range(5):
 		var floating_heart = Label.new()
 		floating_heart.text = "💔"
@@ -122,7 +127,6 @@ func _animate_heart_loss() -> void:
 		await tween2.finished
 		floating_heart.queue_free()
 
-# ==================== НОВАЯ ФУНКЦИЯ - СКРЫТИЕ СЕРДЕЦ ====================
 func _hide_hearts() -> void:
 	if hearts_container:
 		hearts_container.visible = false
@@ -131,9 +135,8 @@ func _show_hearts() -> void:
 	if hearts_container:
 		hearts_container.visible = true
 
-# ==================== ОСТАЛЬНЫЕ ФУНКЦИИ ====================
 func start_countdown() -> void:
-	_show_hearts()  # Показываем сердца при старте
+	_show_hearts() 
 	countdown_label.visible = true
 	await get_tree().create_timer(1.0).timeout
 	countdown_label.text = "3"
@@ -441,11 +444,57 @@ func _on_lives_changed(new_lives: int) -> void:
 	_update_hearts_display(new_lives)
 
 func _on_score_changed(new_score: int) -> void:
-	score_label.text = "Очки: " + str(new_score)
+	var formatted_score = _format_score(new_score)
+	score_label.text = "⭐ " + formatted_score
 	
 	var tween = create_tween()
-	tween.tween_property(score_label, "scale", Vector2(1.2, 1.2), 0.1)
+	tween.set_trans(Tween.TRANS_BOUNCE)
+	tween.parallel().tween_property(score_label, "scale", Vector2(1.25, 1.25), 0.08)
+	tween.parallel().tween_property(score_label, "modulate", Color(1, 0.85, 0.2), 0.08)
 	tween.tween_property(score_label, "scale", Vector2(1.0, 1.0), 0.2)
+	tween.parallel().tween_property(score_label, "modulate", Color(1, 1, 1), 0.2)
+	
+	var rotate_tween = create_tween()
+	rotate_tween.tween_property(score_label, "rotation", 0.05, 0.05)
+	rotate_tween.tween_property(score_label, "rotation", -0.03, 0.07)
+	rotate_tween.tween_property(score_label, "rotation", 0.0, 0.08)
+	
+	_show_score_popup(new_score)
+
+func _format_score(score: int) -> String:
+	var score_str = str(score)
+	var formatted = ""
+	var len = score_str.length()
+	
+	for i in range(len):
+		if i > 0 and (len - i) % 3 == 0:
+			formatted += ","
+		formatted += score_str[i]
+	
+	return formatted
+
+func _show_score_popup(new_score: int) -> void:
+	var added_score = new_score - _previous_score
+	_previous_score = new_score
+	
+	if added_score <= 0:
+		return
+	
+	var popup = Label.new()
+	popup.text = "+" + str(added_score)
+	popup.add_theme_font_size_override("font_size", 32)
+	popup.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
+	popup.add_theme_constant_override("outline_size", 2)
+	popup.add_theme_color_override("font_outline_modulate", Color(0, 0, 0))
+	popup.position = score_label.global_position + Vector2(80, -30)
+	add_child(popup)
+	
+	var tween = create_tween()
+	tween.parallel().tween_property(popup, "position", popup.position + Vector2(0, -70), 0.8)
+	tween.parallel().tween_property(popup, "modulate:a", 0.0, 0.8)
+	tween.parallel().tween_property(popup, "scale", Vector2(1.2, 1.2), 0.2)
+	await tween.finished
+	popup.queue_free()
 
 func _on_game_over() -> void:
 	is_game_active = false
@@ -462,7 +511,6 @@ func _on_game_over() -> void:
 
 	Input.set_custom_mouse_cursor(null)
 	
-	# СКРЫВАЕМ СЕРДЦА ПРИ ПОКАЗЕ ЭКРАНА ОЧКОВ
 	_hide_hearts()
 	
 	show_game_over_banner()
