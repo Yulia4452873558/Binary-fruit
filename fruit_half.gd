@@ -1,10 +1,12 @@
 extends RigidBody2D
 
-
 @onready var sprite: Sprite2D = $Sprite2D
 
 var fruit_type: String = "apple"
 var is_left_half: bool = true
+
+# Используйте ТАКОЙ ЖЕ масштаб, как в fruit.gd
+const FRUIT_SCALE := 1.2  # Должно совпадать с fruit.gd!
 
 var fruit_half_textures = {
 	"peach": "res://assets/sprites/peachHalf.png",
@@ -40,15 +42,19 @@ var fruit_full_textures = {
 
 func _ready() -> void:
 	var tex_path: String = ""
+	
 	if fruit_type in fruit_half_textures:
 		tex_path = fruit_half_textures[fruit_type]
 		print("Загрузка текстуры: ", tex_path)
 		var texture = load(tex_path) as Texture2D
 		if texture:
-			print("Текстура загружена, размер: ", texture.get_width(), "x", texture.get_height())
+			print("Текстура загружена")
 			sprite.texture = texture
 			sprite.region_enabled = false
-			sprite.scale = Vector2(0.35, 0.35)  
+			
+			# ПРОСТО УВЕЛИЧИВАЕМ МАСШТАБ
+			sprite.scale = Vector2(FRUIT_SCALE, FRUIT_SCALE)
+			
 			if not is_left_half:
 				sprite.flip_h = true
 			sprite.position.x = 10 if is_left_half else -10
@@ -70,9 +76,11 @@ func _ready() -> void:
 			else:
 				sprite.region_rect = Rect2(tw / 2, 0, tw / 2, th)
 				sprite.position.x = 8
-			sprite.scale = Vector2(0.35, 0.35)  
+			
+			# ПРОСТО УВЕЛИЧИВАЕМ МАСШТАБ
+			sprite.scale = Vector2(FRUIT_SCALE, FRUIT_SCALE)
 	
-	print("Итоговый масштаб: ", sprite.scale)  
+	print("Итоговый масштаб: ", sprite.scale)
 	
 	var angle: float
 	if is_left_half:

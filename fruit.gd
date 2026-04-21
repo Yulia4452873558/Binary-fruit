@@ -36,8 +36,8 @@ func _ready() -> void:
 		# Если тип фрукта не найден в словаре, удаляем объект
 		print("Ошибка: неизвестный тип фрукта - ", fruit_type)
 		queue_free()
-	sprite.scale = Vector2(1.4, 1.4)
-	
+	sprite.scale = Vector2(1.2, 1.2)
+	collision_shape.scale = Vector2(2.0, 2.0) 
 	var angle = randf_range(-PI/1.9 - 0.12, -PI/1.9 + 0.12)  
 	var speed = randf_range(1000, 1300) 
 	velocity = Vector2(cos(angle), sin(angle)) * speed
