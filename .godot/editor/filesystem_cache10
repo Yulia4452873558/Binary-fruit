@@ -1,12 +1,12 @@
 63f7b34db8d8cdea90c76aacccf841ec
-::res://::1776395961
+::res://::1776749122
 banner.jpg::CompressedTexture2D::5737633984545295830::1771515907::1771565737::1::::<><><>0<>0<>c409c32b809dc81414409315283323d4<>res://.godot/imported/banner.jpg-692e523388eda68bd34994979ccab0d9.ctex::
 export_presets.cfg::TextFile::-1::1771576270::0::1::::<><><>0<>0<><>::
 fruit.gd::GDScript::1438461436036341523::1772979296::0::1::::<>RigidBody2D<><>0<>0<><>::
 fruit.tscn::PackedScene::409163299696560813::1772979296::0::1::::<><><>0<>0<><>::uid://uq2iqv2ke2nn::::res://fruit.gd<>uid://83n2ie42vc3x::::res://assets/sprites/apple.png
 fruit_half.gd::GDScript::2264251499174318477::1772979296::0::1::::<>RigidBody2D<><>0<>0<><>::
 fruit_half.tscn::PackedScene::481479077990291148::1772979296::0::1::::<><><>0<>0<><>::uid://7i25ko2ls542::::res://fruit_half.gd<>uid://83n2ie42vc3x::::res://assets/sprites/apple.png
-game.gd::GDScript::3144921553106393682::1775210922::0::1::::<>Control<><>0<>0<><>::
+game.gd::GDScript::3144921553106393682::1776396720::0::1::::<>Control<><>0<>0<><>::
 game.tscn::PackedScene::336847521402830478::1774190595::0::1::::<><><>0<>0<><>::uid://bk2onswxceodu::::res://game.gd<>uid://cu4non8apcpmw::::res://assets/sprites/background.png<>uid://bthv58xf2tsw0::::res://assets/audio/playMusic.mp3<>uid://b77pyyevbmhin::::res://assets/audio/fruitSection.mp3<>uid://o467e77f2eih::::res://assets/audio/bomb.wav<>uid://bxdb8p7yenplk::::res://assets/audio/loss.mp3<>uid://gtt5kwl1evgw::::res://assets/sprites/scores.png
 game_manager.gd::GDScript::6803660368446098579::1773377675::0::1::::<>Node<><>0<>0<><>::
 icon.svg::CompressedTexture2D::8055952728675210047::1770999206::1770999235::1::::<><><>0<>0<>99ce08563f5a8df94e642e7a100ce237<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
@@ -15,7 +15,7 @@ main_menu.tscn::PackedScene::210807872887274307::1773375058::0::1::::<><><>0<>0<
 node_2d.gd::GDScript::1190451164238097476::1771603661::0::1::::<>Node2D<><>0<>0<><>::
 node_2d.tscn::PackedScene::7236512913126388522::1772118051::0::1::::<><><>0<>0<><>::uid://q7ws6uojlpvw::::res://node_2d.gd
 README.md::TextFile::-1::1771691066::0::1::::<><><>0<>0<><>::
-settings.gd::GDScript::3786713666789495293::1775212441::0::1::::<>Control<><>0<>0<><>::
+settings.gd::GDScript::3786713666789495293::1776396696::0::1::::<>Control<><>0<>0<><>::
 settings.tscn::PackedScene::264531743109100143::1773677214::0::1::::<><><>0<>0<><>::uid://bt7kvdx0f2pyj::::res://settings.gd<>uid://cu4non8apcpmw::::res://assets/sprites/background.png
 splashScreen2.png::CompressedTexture2D::3638972449634976641::1773040740::1773040741::1::::<><><>0<>0<>77dc0161bfa9ca3d75aa8386fc446507<>res://.godot/imported/splashScreen2.png-7184b9e07bdd725d68f207c0a7b86672.ctex::
 stain.gd::GDScript::3907133149443883261::1772979296::0::1::::<>Sprite2D<><>0<>0<><>::
