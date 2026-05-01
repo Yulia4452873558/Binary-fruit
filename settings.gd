@@ -87,8 +87,12 @@ func _create_checkbox_icon(checked: bool) -> ImageTexture:
 	return ImageTexture.create_from_image(img)
 
 func _setup_back_button() -> void:
-	back_button.add_theme_font_size_override("font_size", 40)
-	back_button.custom_minimum_size = Vector2(600, 60)
+	# УВЕЛИЧЕННЫЙ РАЗМЕР КНОПКИ
+	back_button.add_theme_font_size_override("font_size", 48)  # Было 40, стало 48
+	back_button.custom_minimum_size = Vector2(800, 100)  # Было 600x60, стало 800x100
+	
+	# Добавляем отступы внутри кнопки (padding)
+	back_button.add_theme_constant_override("outline_size", 2)
 	
 	# Эффекты наведения
 	back_button.mouse_entered.connect(_on_back_button_hover_start)
