@@ -27,8 +27,8 @@ grow_vertical = 2
 color = Color(0.4, 0.25, 0.15, 1)
 
 [node name="Background2" type="Sprite2D" parent="." unique_id=1567145933]
-position = Vector2(544.49994, 972.49994)
-scale = Vector2(1.4882811, 1.4784225)
+position = Vector2(544.49994, 1176.5)
+scale = Vector2(1.4882811, 1.7819939)
 texture = ExtResource("2_e2o6t")
 
 [node name="GameArea" type="Control" parent="." unique_id=1658314907]
@@ -44,6 +44,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -11.0
+offset_top = 81.0
+offset_right = 4.0
+offset_bottom = 436.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -66,8 +70,8 @@ anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -300.0
-offset_top = 20.0
-offset_right = -20.0
+offset_top = 10.0
+offset_right = -108.0
 offset_bottom = 100.0
 grow_horizontal = 0
 theme_override_font_sizes/font_size = 48
@@ -76,15 +80,15 @@ horizontal_alignment = 2
 
 [node name="CountdownLabel" type="Label" parent="UI" unique_id=1506679139]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -100.0
-offset_right = 200.0
-offset_bottom = 100.0
+anchors_preset = -1
+anchor_left = 0.544
+anchor_top = 0.40800002
+anchor_right = 0.544
+anchor_bottom = 0.40800002
+offset_left = -199.68005
+offset_top = -100.20007
+offset_right = 200.31995
+offset_bottom = 99.79993
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 120
@@ -94,15 +98,15 @@ vertical_alignment = 1
 
 [node name="BombMessage" type="Label" parent="UI" unique_id=486080130]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -400.0
-offset_top = -50.0
-offset_right = 400.0
-offset_bottom = 50.0
+anchors_preset = -1
+anchor_left = 0.52400005
+anchor_top = 0.40600002
+anchor_right = 0.52400005
+anchor_bottom = 0.40600002
+offset_left = -414.78003
+offset_top = -99.650024
+offset_right = 415.21997
+offset_bottom = 0.3499756
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(1, 0.2, 0.2, 1)
