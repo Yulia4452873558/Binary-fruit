@@ -48,15 +48,18 @@ func _ready() -> void:
 	_previous_score = initial_score
 	
 	# НАСТРОЙКА СТИЛЯ ОЧКОВ - УВЕЛИЧЕННЫЙ РАЗМЕР
-	score_label.add_theme_font_size_override("font_size", 56)  # Было 42, стало 56
+	score_label.add_theme_font_size_override("font_size", 70)  # Было 42, стало 56
 	score_label.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
 	score_label.add_theme_constant_override("shadow_offset_x", 3)
 	score_label.add_theme_constant_override("shadow_offset_y", 3)
 	score_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.5))
 	score_label.add_theme_constant_override("outline_size", 2)
 	score_label.add_theme_color_override("font_outline_modulate", Color(0.5, 0.3, 0))
-	
+	score_label.anchor_left = 1.0
+	score_label.offset_right = -30
+	score_label.offset_top = 20
 	_create_hearts_system()
+	
 	
 	if has_node("UI/LivesLabel"):
 		$UI/LivesLabel.queue_free()
@@ -68,23 +71,24 @@ func _ready() -> void:
 	bomb_message.visible = false
 	game_over_panel.visible = false
 	continue_button.pressed.connect(_on_continue_pressed)
+	
 
 func _create_hearts_system() -> void:
 	hearts_container = HBoxContainer.new()
 	hearts_container.name = "HeartsContainer"
 	
-	var screen_size = get_viewport().size
-	hearts_container.position = Vector2(20, 20)
+	# Используем якоря вместо фиксированной позиции
+	hearts_container.anchor_left = 0.0
+	hearts_container.anchor_top = 0.0
+	hearts_container.offset_left = 20
+	hearts_container.offset_top = 20
+	
 	hearts_container.add_theme_constant_override("separation", 12)
 	$UI.add_child(hearts_container)
 	
-	get_viewport().size_changed.connect(_update_hearts_position)
-	
-	_update_hearts_display(3)
+	_update_hearts_display(game_manager.lives)
 
-func _update_hearts_position() -> void:
-	if hearts_container:
-		hearts_container.position = Vector2(20, 20)
+
 
 func _update_hearts_display(lives: int) -> void:
 	for heart in hearts:
